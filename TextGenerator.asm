@@ -1,12 +1,12 @@
-%include "io64.inc"
+;%include "io64.inc"
 %include "/home/zuckerberg/Escritorio/Github/TextGenerator/Bresenham.asm"
 %include "/home/zuckerberg/Escritorio/Github/TextGenerator/OnesFile.asm"
 
 SECTION .data
 filename1 db '/home/zuckerberg/Escritorio/Github/TextGenerator/Song.txt', 0h    ; El archivo para leer
 filename2 db '/home/zuckerberg/Escritorio/Github/TextGenerator/Song.bin', 0h    ; El archivo para crear
-contents  db '0', 0h ; the contents to write at the start of the file
-len equ 250 ;Cantidad de caracteres en una fila del archivo
+contents  db '0', 0h ; El contenido que se le escribe al archivo
+len equ 250 ; Cantidad de caracteres en una fila del archivo
 endFile equ 667 ; Cantidad de bytes en el archivo creado
 ones db '111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111', 0ah
 
@@ -15,45 +15,44 @@ fileContents resb 255,
 iden resb 1
 
 section .text
-global CMAIN
-CMAIN:
-    mov rbp, rsp; for correct debugging   
+global _start
+_start:   
     call OnesFile
     mov rcx, 0              ; Entra en modo de lectura del archivo
     mov rbx, filename1      ; Nombre del archivo creado
     mov rax, 5              ; Abre el archivo con la OP (kernel opcode 5)
     int 80h                 ; Llama al Kernel
     mov rdx, endFile        ; Número de bytes por leer
-    mov rcx, fileContents   ; Mueve el contenido del archivo al registro ECX
-    mov rbx, rax            ; Mueve el descriptor del archivo al registro EBX
+    mov rcx, fileContents   ; Mueve el contenido del archivo al registro RCX
+    mov rbx, rax            ; Mueve el descriptor del archivo al registro RBX
     mov rax, 3              ; Lee el archivo con la OP (kernel opcode 3)
     int 80h                 ; Llama al Kernel
-    mov rsi, fileContents
-    mov rdi, 0x1
-    mov rax, 6
-    int 80h
-    mov r14, 0x0
-    mov r15, 0x0
+    mov rsi, fileContents   ; Escribe el contenido del archivo en RSI
+    mov rdi, 0x1            ; Inicializa un contador de caracteres ya escritos
+    mov rax, 6              ; Cierra el archivo
+    int 80h                 ; Llama al Kernel
+    mov r14, 0x0            ; Cantidad de posiciones recorridas en las columnas
+    mov r15, 0x0            ; Cantidad de posiciones recorridas en las columnas
 
 FirstLoop:
-    mov rcx, rsi
-    mov cl, byte [rsi]
-    call comparator
-    mov rsi, fileContents
-    add rsi, rdi
-    add r14, 0x6
-    cmp r14, 246
-    jge incY
-    inc rdi
-    cmp rdi, endFile
-    jl FirstLoop
-    call quit
+    mov rcx, rsi    ; Mueve los contenidos del archivo
+    mov cl, byte [rsi]  ; Extrae el caracter actual del archivo
+    call comparator ; Llama a la función general de comparación
+    mov rsi, fileContents ; Mueve los contenidos del archivo
+    add rsi, rdi ; Actualiza el registro con la posición actual del caracter escrito
+    add r14, 0x6 ; Mueve el contador de columnas a la siguiente palabra
+    cmp r14, 245 ; Compara si llegó al final del archivo
+    jge incY    ; Salta al incremento en Y
+    inc rdi ; Incrementa el contador
+    cmp rdi, endFile ; Lo compara con la cantidad de caracteres
+    jl FirstLoop ; Si es menor, repite el ciclo
+    call Signature ; Realiza la firma
     
 incY:
-    add r15, 0x6
-    mov r14, 0x0
-    inc rdi
-    jmp FirstLoop
+    add r15, 0x6 ; Mueve el contador de filas a la siguiente palabra
+    mov r14, 0x0 ; Reinicia el contador de columnas
+    inc rdi ; Incrementa el contador
+    jmp FirstLoop ; Repite el ciclo
 
 comparator:
     cmp cl, 'A'
@@ -112,7 +111,7 @@ comparator:
     je letterAp
     cmp cl, ','
     je letterColon
-    cmp cl, ' '
+    cmp cl, 20h
     je letterSpace
     ret
 
@@ -871,34 +870,40 @@ letterColon:
     ret 
     
 letterSpace:
-;    mov r9, 0
-;    mov r8, 246
+;    mov r9, 0x6
+;    mov r8, rdi
+;    inc r8
 ;    jmp counter
     add r14, 0x0
     add r15, 0x0
     ret
     
 ;counter:
-;    inc rsi
-;    mov bl, byte[rsi]
-;    inc r9
-;    cmp bl, ' '
-;    jne counter
-;    sub r8, rdi
-;    sub r8, r9
-;    cmp r9, r8
+;    mov r10, fileContents
+;    add r10, r8
+;    mov bl, byte[r10]
+;    add r14, r8
+;    cmp r14, endFile
+;    jge Signature
+;    sub r14, r8
+;    cmp bl, 20h
+;    je verEndLine
+;    add r9, 0x6
+;    inc r8
+;    jmp counter
+;    
+;verEndLine:
+;    mov r11, r14
+;    add r11, r9
+;    cmp r11, 250
 ;    jge endLine
-;    sub rsi, r9
-;    add r15, 0x0
-;    add r14, 0x0
 ;    ret
 ;    
 ;endLine:
-;    add r15, 0x6
 ;    mov r14, 0x0
-;    inc rdi
-;    sub rsi, r9
-;    jmp FirstLoop 
+;    sub r14, 0x6
+;    add r15, 0x6
+;    jmp FirstLoop
 
 ;Vertical:
 ;    call writeFile
@@ -1006,7 +1011,48 @@ letterSpace:
 ;    mov rax, 6
 ;    int 80h
 ;    ret
-                
+
+Signature:
+    mov r13, 230
+    mov r12, 230
+    add r12, 0x4
+    mov r8, 230
+    mov r10, 230
+    call Bresenham
+    mov r8, 230
+    mov r10, 230
+    add r10, 0x4
+    mov r13, 230
+    add r13, 0x4
+    mov r12, r10
+    call Bresenham
+    mov r13, 232
+    mov r12, 232
+    add r12, 0x2
+    mov r8, 232
+    mov r10, 232
+    call Bresenham
+    mov r8, 232
+    mov r13, 232
+    add r13, 0x2
+    mov r12, 232
+    mov r10, 232
+    call Bresenham
+    mov r10, 232
+    add r10, 0x2
+    mov r13, 232
+    add r13, 0x2
+    mov r8, 232 
+    mov r12, r10
+    call Bresenham
+    mov r10, 232
+    mov r13, 232
+    add r13, 0x2
+    mov r8, 232
+    mov r12, 232
+    add r12, 0x1
+    call Bresenham
+             
 quit:
     mov rbx, 0
     mov rax, 1

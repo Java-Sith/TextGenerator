@@ -24,10 +24,10 @@ OnesFile:
             
 OneLoop:
     mov rdx, len
-    mov rbx, [iden]
+    mov rbx, [iden] ;rax ;valor
     mov rcx, ones
     mov rax, 4
-    int 80h
+    int 80h ; Llama al Kernel
     inc r12
     cmp r12, rdx
     jle OneLoop

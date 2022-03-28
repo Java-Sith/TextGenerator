@@ -11,18 +11,18 @@
 ;    jmp Bresenham ;Salta al algoritmo de Bresenham
 
 Vertical:
-    call writeFile
-    inc r10
+    call writeFile ;Llama a la función que escribe el archivo
+    inc r10 ;Incrementa la posición en y
     cmp r10, r12 ;Si r10 es menor que r12
-    jl Vertical
+    jl Vertical ;Retorna al ciclo
     ret
     
 Diagonal:
-    call writeFile
-    dec r10
-    inc r8
-    cmp r12, r10
-    jle Diagonal
+    call writeFile ;Llama a la función que escribe el archivo
+    dec r10 ;Decrementa la posición inicial en y para dibujar la diagonal
+    inc r8 ;Incrementa la posición en x
+    cmp r12, r10 ;Si r12 es menor que r10
+    jle Diagonal ;Retorna al ciclo
     ret
 
 Bresenham:
@@ -108,13 +108,24 @@ BresenhamCircle:
         add r8, r12 ;x = x + xc
         add r10, r13 ;y = y + yc
         call writeFile
-        sub r8, r12 
+        sub r8, r12 ;x = x - xc
         sub r8, r12 ;x = x - xc
         call writeFile
         add r8, r12 ;x = x + xc
         add r8, r12 ;x = x + xc
         sub r10, r13 ;y = y - yc
         sub r10, r13 ;y = y - yc
+        call writeFile
+        sub r8, r12 ;x = x - xc
+        sub r8, r12 ;x = x - xc
+        call writeFile
+        add r8, r12 ;x = xc + x
+        add r8, r13 ;x = xc + y
+        add r10, r13 ;y = y + yc
+        add r10, r12 ;y = x + yc
+        call writeFile
+        sub r8, r12 ;x = xc - y
+        sub r8, r12 ;x = xc - y
         call writeFile
         
         
