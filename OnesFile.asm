@@ -1,21 +1,15 @@
 ;%include "io64.inc"
 ;
 ;SECTION .data
-;;filename1 db '/home/zuckerberg/Escritorio/Github/TextGenerator/Enemy.txt', 0h    ; El archivo para leer
-;filename2 db '/home/zuckerberg/Escritorio/Github/TextGenerator/1file.bin', 0h    ; the filename to create
-;;contents  db '0', 0h ; the contents to write at the start of the file
+;filename db '/home/zuckerberg/Escritorio/Github/TextGenerator/Song.bin', 0h    ; the filename to create
 ;endFile equ 250 ;Cantidad de caracteres en una fila del archivo
-;;len1 equ 483 ; Cantidad de bytes en el archivo creado
 ;ones db '111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111', 0ah
-;len2 equ  $-ones
-;
-;section .bss
-;;fileContents resb 255,
-;descriptor resb 1
+;len equ  $-ones
 ;
 ;section .text
 ;global CMAIN
 ;CMAIN:
+;    mov rbp, rsp; for correct debugging
 ;    ;write your code here
 ;    call OnesFile
 
@@ -24,23 +18,23 @@ OnesFile:
     mov rbx, filename2      ; Nombre del archivo por crear
     mov rax, 8              ; Crea el archivo con la OP (kernel opcode 8)
     int 80h                 ; Llama al Kernel
-    mov r9, 0
-    mov [descriptor], rax
+    mov r12, 0x0            ; Declara un contador
+    mov [iden], rax
     call OneLoop   
             
 OneLoop:
-    mov rdx, len2
-    mov rbx, [descriptor]
+    mov rdx, len
+    mov rbx, [iden]
     mov rcx, ones
     mov rax, 4
     int 80h
-    inc r9
-    cmp r9, endFile
+    inc r12
+    cmp r12, rdx
     jle OneLoop
     jmp OneDone
     
 OneDone:
-    mov rbx, [descriptor]
+    mov rbx, rbx
     mov rax, 6
     int 80h
     ret

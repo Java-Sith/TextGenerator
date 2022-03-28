@@ -3,17 +3,16 @@
 %include "/home/zuckerberg/Escritorio/Github/TextGenerator/OnesFile.asm"
 
 SECTION .data
-filename1 db '/home/zuckerberg/Escritorio/Github/TextGenerator/Enemy.txt', 0h    ; El archivo para leer
+filename1 db '/home/zuckerberg/Escritorio/Github/TextGenerator/Song.txt', 0h    ; El archivo para leer
 filename2 db '/home/zuckerberg/Escritorio/Github/TextGenerator/Song.bin', 0h    ; El archivo para crear
 contents  db '0', 0h ; the contents to write at the start of the file
-endFile equ 250 ;Cantidad de caracteres en una fila del archivo
-len1 equ 483 ; Cantidad de bytes en el archivo creado
+len equ 250 ;Cantidad de caracteres en una fila del archivo
+endFile equ 667 ; Cantidad de bytes en el archivo creado
 ones db '111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111', 0ah
-len2 equ  $-ones
 
 section .bss
 fileContents resb 255,
-descriptor resb 1
+iden resb 1
 
 section .text
 global CMAIN
@@ -24,7 +23,7 @@ CMAIN:
     mov rbx, filename1      ; Nombre del archivo creado
     mov rax, 5              ; Abre el archivo con la OP (kernel opcode 5)
     int 80h                 ; Llama al Kernel
-    mov rdx, len1           ; Número de bytes por leer
+    mov rdx, endFile        ; Número de bytes por leer
     mov rcx, fileContents   ; Mueve el contenido del archivo al registro ECX
     mov rbx, rax            ; Mueve el descriptor del archivo al registro EBX
     mov rax, 3              ; Lee el archivo con la OP (kernel opcode 3)
@@ -43,10 +42,10 @@ FirstLoop:
     mov rsi, fileContents
     add rsi, rdi
     add r14, 0x6
-    cmp r14, 205
+    cmp r14, 246
     jge incY
     inc rdi
-    cmp rdi, len1
+    cmp rdi, endFile
     jl FirstLoop
     call quit
     
@@ -981,7 +980,33 @@ letterSpace:
 ;    mov rax, 6              ; Cierra el archivo
 ;    int 80h                 ; Llama el kernel 
 ;    ret
-               
+;       
+;OnesFile:
+;    mov rcx, 0777o          ; Crea el archivo a escribir
+;    mov rbx, filename2      ; Nombre del archivo por crear
+;    mov rax, 8              ; Crea el archivo con la OP (kernel opcode 8)
+;    int 80h                 ; Llama al Kernel
+;    mov r12, 0x0            ; Declara un contador
+;    mov [iden], rax
+;    call OneLoop   
+;            
+;OneLoop:
+;    mov rdx, len
+;    mov rbx, [iden]
+;    mov rcx, ones
+;    mov rax, 4
+;    int 80h
+;    inc r12
+;    cmp r12, rdx
+;    jle OneLoop
+;    jmp OneDone
+;    
+;OneDone:
+;    mov rbx, rbx
+;    mov rax, 6
+;    int 80h
+;    ret
+                
 quit:
     mov rbx, 0
     mov rax, 1

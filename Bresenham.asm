@@ -69,10 +69,55 @@ Bresenham:
         ret
 
 BresenhamCircle:
-    imul r10, 0x2
-    mov r11, 0x3
-    sub r11, r10
+    mov r13, r10
+    mov r12, 0x0
+    imul r9, 0x2 ;Se duplica el radio, 2r
+    neg r9 ;Se convierte el valor de r en un negativo, -2r
+    add r9, 0x3 ;Se obtiene la d, d = 3 - 2r
+    call drawCircle ;Llama a la función para escribir el círculo
+    cmp r13, r12 ;Cumple el condicional del ciclo, x <= y
+    jge circleLoop ;Salta al ciclo del círculo
+    ret
     
+    circleLoop: ;Ciclo for
+        inc r12 ;x++
+        cmp r9, 0x0 ;Revisa la condición de incremento, 0 < d  
+        jle incrementD ;Salta el procedimiento de la condición
+        mov r11, r12 ;Guarda el valor de x para operarlo
+        sub r11, r13 ;x = x - y
+        imul r11, 0x4 ;x - y = 4(x - y)
+        add r9, r11 ;d = d + 4(x - y)
+        add r9, 0x10 ;d = d + 4(x- y) + 10
+        dec r13 ;y--
+        call drawCircle
+        cmp r13, r12 ;Cumple el condicional del ciclo, x <= y
+        jge circleLoop ;Salta al ciclo del círculo
+        ret
+        
+    incrementD:
+        mov r11, r12 ;Guarda el valor de x para operarlo
+        imul r11, 0x4 ;x = 4x
+        add r9, r11 ;d = d + 4x
+        add r9, 0x10 ;d = d + 4x + 10
+        call drawCircle
+        cmp r13, r12 ;Cumple el condicional del ciclo, x <= y
+        jge circleLoop ;Salta al ciclo del círculo
+        ret
+        
+    drawCircle:
+        add r8, r12 ;x = x + xc
+        add r10, r13 ;y = y + yc
+        call writeFile
+        sub r8, r12 
+        sub r8, r12 ;x = x - xc
+        call writeFile
+        add r8, r12 ;x = x + xc
+        add r8, r12 ;x = x + xc
+        sub r10, r13 ;y = y - yc
+        sub r10, r13 ;y = y - yc
+        call writeFile
+        
+        
 ;EndAlgo:
 ;    mov     rbx, rbx            ; El descriptor del archivo se utiliza
 ;    mov     rax, 6              ; Cierra el archivo
